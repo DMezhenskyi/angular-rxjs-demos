@@ -3,13 +3,13 @@ import { Component, OnInit } from '@angular/core';
 import { Observable, Subject, zip } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
-type Durum = ['flat bread', 'meat', 'souse', 'tomato', 'cabbage'];
+type Durum = ['flat bread', 'meat', 'sauce', 'tomato', 'cabbage'];
 @Component({
   selector: 'app-root',
   template: `
     <button (click)="_flatBread.next('flat bread')">Add Flat Bread</button>
     <button (click)="_meat.next('meat')">Add Meat</button>
-    <button (click)="_souse.next('souse')">Add Souse</button>
+    <button (click)="_souse.next('sauce')">Add Souse</button>
     <button (click)="_tomato.next('tomato')">Add Tomato</button>
     <button (click)="_cabbage.next('cabbage')">Add Cabbage</button>
     <ng-container *ngIf="durum$ | async as durum">
@@ -29,7 +29,7 @@ export class AppComponent implements OnInit {
 
   _flatBread = new Subject<'flat bread'>();
   _meat = new Subject<'meat'>();
-  _souse = new Subject<'souse'>();
+  _souse = new Subject<'sauce'>();
   _tomato = new Subject<'tomato'>();
   _cabbage = new Subject<'cabbage'>();
 
