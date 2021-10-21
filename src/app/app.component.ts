@@ -1,29 +1,40 @@
 import { Component, OnInit } from "@angular/core";
 import { Observable, Subject, zip } from "rxjs";
-import { map, tap } from "rxjs/operators";
+import { map, mergeMap, switchMap, take, tap } from "rxjs/operators";
 
 type Durum = ["flat bread", "meat", "sauce", "tomato", "cabbage"];
+interface Order {
+  amount: number;
+  customerId: number;
+}
+interface Product {
+  product: Durum;
+  customerId: number;
+}
 
 let flatBreadCounter = 0;
 let meatCounter = 0;
 let sauceCounter = 0;
 let tomatoCounter = 0;
 let cabbageCounter = 0;
+let customerId = 0;
 @Component({
   selector: "app-root",
   template: `
+    <button (click)="dispatchOrder()">Order Durum</button>
+    <hr />
     <button (click)="_flatBread.next('flat bread')">Add Flat Bread</button>
     <button (click)="_meat.next('meat')">Add Meat</button>
     <button (click)="_souse.next('sauce')">Add Souse</button>
     <button (click)="_tomato.next('tomato')">Add Tomato</button>
     <button (click)="_cabbage.next('cabbage')">Add Cabbage</button>
-    <ng-container *ngIf="durum$ | async as durum">
-      <section *ngIf="durum?.length > 0">
+    <ng-container *ngIf="delivery$ | async as product">
+      <section *ngIf="product?.product">
         <h4>Enjoy</h4>
         <img src="assets/durum.jpeg" alt="" width="400" />
 
         <h5>Ingredients:</h5>
-        <pre>{{ durum | json }}</pre>
+        <pre>{{ product | json }}</pre>
       </section>
     </ng-container>
   `,
@@ -31,7 +42,9 @@ let cabbageCounter = 0;
 })
 export class AppComponent implements OnInit {
   durum$: Observable<Durum>;
+  delivery$: Observable<Product>;
 
+  _order = new Subject<Order>();
   _flatBread = new Subject<"flat bread">();
   _meat = new Subject<"meat">();
   _souse = new Subject<"sauce">();
@@ -61,5 +74,21 @@ export class AppComponent implements OnInit {
         tap(console.log)
       )
     ).pipe(tap((durum) => console.log("Enjoy!", durum)));
+
+    this.delivery$ = this._order.pipe(
+      tap((order) => console.log("New Order: ", order)),
+      switchMap(({ amount, customerId }) =>
+        this.durum$.pipe(
+          take(amount),
+          map((durum) => ({ product: durum, customerId }))
+        )
+      ),
+      tap((product) => console.log("Delivered Product: ", product))
+    );
+  }
+  dispatchOrder() {
+    const amount = Math.floor(Math.random() * 3) + 1;
+    ++customerId;
+    this._order.next({ amount, customerId });
   }
 }
